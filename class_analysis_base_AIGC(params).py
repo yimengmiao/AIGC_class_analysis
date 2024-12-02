@@ -5,7 +5,7 @@ from model_api_handler import ModelAPI
 
 def main(grade, subject, task, analysis_text,use_files=True):
     start_time = time.time()
-    # todo:传两个参数更加标准，两个参数都是string格式
+    #传两个参数更加标准，两个参数都是string格式
     # 实现逻辑：task 传”这是一节2年级的语文课，请你帮我分析这节课的教学方法“
 
     # 根据task找到对应的class_stand_text_file_path和bc_knowledge_file_paths,
@@ -106,7 +106,7 @@ def construct_prompt(prompt_file_path, analysis_data_file_path, class_stand_text
     return full_prompt
 
 
-# todo:未来做成一个接口，然后传参就看business_code/业务代码文档/基于AIGC的课堂分析（zonekey）/class_analysis_base_AIGC(params)的代码使用方法.md
+# 未来做成一个接口，然后传参就看business_code/业务代码文档/基于AIGC的课堂分析（zonekey）/class_analysis_base_AIGC(params)的代码使用方法.md
 def get_result(params):
     # 使用 construct_prompt 函数生成 prompt 文本
     text = construct_prompt(
@@ -127,59 +127,6 @@ def get_result(params):
 
 if __name__ == '__main__':
     # 　用ｑｗｅｎ－ｌｏｎｇ接口调用。
-    # with open("prompt/基于AIGC的课堂分析（zonkey版本）/prompt/教学效果.txt", "r", encoding="utf-8") as f:
-    #     text = f.read()
-    #
-    # params = {
-    #     "model_family": "qwen",
-    #     "api_key": "sk-454416d3aac549cd9bf043aa9fa2f158",
-    #     "prompt": text,
-    #     "model_name": "qwen-long",  # Example model, can be changed
-    #     "max_tokens": 1000,
-    #     "n": 1,
-    #     "temperature": 0.7,
-    #     "use_files": True,
-    #     "files": ["data/original_data/待分析文本.txt", "prompt/基于AICG的课堂分析/模型知识/教学效果.txt",
-    #               "prompt/基于AIGC的课堂分析（zonkey版本）/课程标准/【3.0】义务教育生物课程标准（2022年版）.txt"]
-    # }
-    #
-    # # 创建 ModelAPI 实例并调用方法
-    # model_api = ModelAPI(params)
-    # result = model_api.analyze()
-    # print("Result:", result)
-
-    # 定义参数，不使用文件，只进行文本分析
-    # 调用模型出结果
-    # 设置文件路径参数
-    # start_time = time.time()
-    # params = {
-    #     "model_family": "local",
-    #     "api_key": "token123",  # 请替换为您的实际 API 密钥
-    #     "prompt_file_path": "prompt/基于AIGC的课堂分析（zonkey版本）/prompt/教学效果.txt",
-    #     "analysis_data_file_path": "data/original_data/待分析文本(长).txt",
-    #     "class_stand_text_file_path": "prompt/基于AIGC的课堂分析（zonkey版本）/课程标准/【3.0】义务教育语文课程标准（2022年版）.txt",
-    #     "bc_knowledge_file_paths": [
-    #
-    #         "prompt/基于AIGC的课堂分析（zonkey版本）/模型知识/问答行为.txt",
-    #         "prompt/基于AIGC的课堂分析（zonkey版本）/模型知识/教学效果.txt",
-    #         "prompt/基于AIGC的课堂分析（zonkey版本）/模型知识/教学方法.txt",
-    #         "prompt/基于AIGC的课堂分析（zonkey版本）/模型知识/问答行为.txt"
-    #
-    #     ],
-    #     "model_name": "qwen2_5-32b-instruct",
-    #     "max_tokens": 2000,
-    #     "n": 1,
-    #     "temperature": 0.7,
-    #     "use_files": False,
-    # }
-    #
-    # # 调用 get_result 函数获取最终结果
-    # result = get_result(params)
-    # end_time = time.time()
-    # print("耗时", end_time - start_time)
-    #
-    # print("返回的文字个数：", len(result))
-    # print("结果", result)
 
     main(grade="2年级",
          subject="语文",

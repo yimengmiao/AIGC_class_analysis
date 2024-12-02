@@ -35,7 +35,7 @@ class ModelAPI:
         elif self.model_family.startswith("qwen"):
             return "https://dashscope.aliyuncs.com/compatible-mode/v1"
         elif self.model_family.startswith("local"):
-            return "https://u515714-acba-1e144003.bjb1.seetacloud.com:8443/v1"  # todo:当前这里是autodl.com部署的接口，未来如有自己的部署接口，更改为自己的url。
+            return "https://u515714-acba-8e1c52b3.bjb1.seetacloud.com:8443/v1"  # todo:当前这里是autodl.com部署的接口，未来如有自己的部署接口，更改为自己的url。
         else:
             raise ValueError(f"Unsupported model family: {self.model_family}")
 
