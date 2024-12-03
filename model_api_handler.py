@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from openai import OpenAI
 
 
@@ -25,6 +26,7 @@ class ModelAPI:
         self.temperature = params.get('temperature', 0.7)
         self.use_files = params.get('use_files', False)
         self.files = params.get('files', [])
+        self.stream = params.get('stream', False)  # 默认不开启流式输出
         self.client = self._get_client()
 
     def _get_base_url(self):
@@ -35,7 +37,7 @@ class ModelAPI:
         elif self.model_family.startswith("qwen"):
             return "https://dashscope.aliyuncs.com/compatible-mode/v1"
         elif self.model_family.startswith("local"):
-            return "https://u515714-acba-8e1c52b3.bjb1.seetacloud.com:8443/v1"  # todo:当前这里是autodl.com部署的接口，未来如有自己的部署接口，更改为自己的url。
+            return "https://u515714-acba-8e1c52b3.bjb1.seetacloud.com:8443/v1"
         else:
             raise ValueError(f"Unsupported model family: {self.model_family}")
 
@@ -50,7 +52,7 @@ class ModelAPI:
             raise ValueError(f"Unsupported model family: {self.model_family}")
 
     def analyze_text(self):
-        user_input = self.prompt + self.text #这里是方便gpt4o的模型，需要把prompt和text拼接起来作为输入。
+        user_input = self.prompt + self.text
         response = self.client.chat.completions.create(
             model=self.model,
             response_format={"type": "json_object"},
@@ -61,18 +63,20 @@ class ModelAPI:
             max_tokens=self.max_tokens,
             n=self.n,
             temperature=self.temperature,
+            stream=self.stream  # 使用实例化时的 stream 参数
         )
-        return response.choices[0].message.content
+        if self.stream:
+            return self._stream_response(response)
+        else:
+            return response.choices[0].message.content
 
     def analyze_with_files(self, prompt, files):
-        # 上传文件并返回文件 ID 列表
         file_ids = []
         for file_path in files:
             if Path(file_path).exists():
                 file_object = self.client.files.create(file=Path(file_path), purpose="file-extract")
                 file_ids.append(f'fileid://{file_object.id}')
 
-        # 创建模型对话请求，结合文件 ID 和文本 prompt 将其一一对应起来
         completion = self.client.chat.completions.create(
             model=self.model,
             messages=[
@@ -82,8 +86,23 @@ class ModelAPI:
             max_tokens=self.max_tokens,
             n=self.n,
             temperature=self.temperature,
+            stream=self.stream  # 使用实例化时的 stream 参数
+
         )
-        return completion.choices[0].message.content
+        if self.stream:
+
+            return self._stream_response(completion)
+        else:
+            return completion.choices[0].message.content
+
+    def _stream_response(self, response):
+
+        for chunk in response:  # 逐块接收数据
+            if hasattr(chunk, 'choices'):
+                # 获取 delta 的 content 属性内容
+                delta = chunk.choices[0].delta.content if chunk.choices[0].delta.content else ""
+                print(delta, end="", flush=True)  # 实时打印输出
+            print()  # 输出结束后换行
 
     def analyze(self):
         if self.use_files and self.files:
@@ -93,38 +112,27 @@ class ModelAPI:
 
 
 if __name__ == '__main__':
-    # 定义参数
+    # 测试非流式输出
     params = {
         "model_family": "qwen",
         "api_key": "your_api_key_here",
         "prompt": "你的提示文本",
-        "model_name": "qwen-long",  # Example model, can be changed
+        "model_name": "qwen-long",
         "max_tokens": 1000,
         "n": 1,
         "temperature": 0.7,
-        "use_files": True,
-        "files": ["file1.txt", "file2.txt"]
+        "use_files": False,
+        "text": "这里是非流式输出的示例文本。",
+        "stream": False  # 不使用流式输出
     }
 
-    # 创建 ModelAPI 实例并调用方法
     model_api = ModelAPI(params)
     result = model_api.analyze()
-    print("Result:", result)
+    print("非流式输出结果:", result)
 
-    # 定义参数，不使用文件，只进行文本分析
-    params = {
-        "model_family": "qwen",
-        "api_key": "your_api_key_here",
-        "prompt": "你的提示文本",
-        "text": "这里是你想分析的文本内容",
-        "model_name": "qwen-long",  # Example model, can be changed
-        "max_tokens": 1000,
-        "n": 1,
-        "temperature": 0.7,
-        "use_files": False  # 或者可以直接省略这个参数
-    }
-
-    # 创建 ModelAPI 实例并调用方法
+    # 测试流式输出
+    params["stream"] = True  # 启用流式输出
+    params["text"] = "这里是流式输出的示例文本。"
     model_api = ModelAPI(params)
     result = model_api.analyze()
-    print("Result:", result)
+    print("流式输出最终结果:", result)
